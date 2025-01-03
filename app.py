@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, url_for
 import requests
 from bs4 import BeautifulSoup
 import logging
@@ -147,32 +147,31 @@ def home():
 def analyze():
     try:
         data = request.get_json()
-        if not data:
-            return jsonify({"error": "No JSON data received"}), 400
-            
         url = data.get('url')
-        if not url:
-            return jsonify({"error": "URL is required"}), 400
-            
-        logger.debug(f"Received request to analyze URL: {url}")
-        content = extract_article_content(url)
-        
-        if isinstance(content, str) and "Error" in content:
-            return jsonify({"error": content}), 400
+        perspective = data.get('perspective', 'all')  # Default to all perspectives
 
-        # Generate all three perspectives
-        business_perspective = generate_perspective(content, "business")
-        political_perspective = generate_perspective(content, "political")
-        upsc_perspective = generate_perspective(content, "upsc")
-        
-        return jsonify({
-            "business": business_perspective,
-            "political": political_perspective,
-            "upsc": upsc_perspective
-        })
+        if not url:
+            return jsonify({'error': 'URL is required'}), 400
+
+        # Fetch and extract text from the URL
+        text = extract_article_content(url)
+        if isinstance(text, str) and "Error" in text:
+            return jsonify({'error': text}), 400
+
+        # Generate perspective based on request
+        result = {}
+        if perspective == 'all' or perspective == 'business':
+            result['business'] = generate_perspective(text, 'business')
+        if perspective == 'all' or perspective == 'political':
+            result['political'] = generate_perspective(text, 'political')
+        if perspective == 'all' or perspective == 'upsc':
+            result['upsc'] = generate_perspective(text, 'upsc')
+
+        return jsonify(result)
+
     except Exception as e:
         logger.error(f"Error in analyze endpoint: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     if not GOOGLE_API_KEY:
