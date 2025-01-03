@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Perspective Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">News Perspective Generator</h1>
+        
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+            <div class="mb-6">
+                <label for="url" class="block text-sm font-medium text-gray-700 mb-2">News Article URL</label>
+                <input type="url" id="url" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       placeholder="https://example.com/article">
+            </div>
+
+            <div class="mb-6">
+                <button onclick="analyze()" class="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
+                    Generate Perspectives
+                </button>
+            </div>
+
+            <div id="result" class="hidden">
+                <h2 class="text-xl font-semibold mb-4">Analysis Results</h2>
+                
+                <div class="space-y-6">
+                    <!-- Business Perspective -->
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <h3 class="font-semibold text-blue-800 mb-2">Business Perspective</h3>
+                        <div id="business-result" class="text-gray-700"></div>
+                    </div>
+
+                    <!-- Political Perspective -->
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <h3 class="font-semibold text-green-800 mb-2">Political Perspective</h3>
+                        <div id="political-result" class="text-gray-700"></div>
+                    </div>
+
+                    <!-- UPSC Perspective -->
+                    <div class="p-4 bg-purple-50 rounded-lg">
+                        <h3 class="font-semibold text-purple-800 mb-2">UPSC Perspective</h3>
+                        <div id="upsc-result" class="text-gray-700"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loading" class="hidden text-center py-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                <p class="mt-2 text-gray-600">Analyzing article...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function analyze() {
+            const url = document.getElementById('url').value;
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            loading.classList.remove('hidden');
+            result.classList.add('hidden');
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url }),
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Display results
+                document.getElementById('business-result').textContent = data.business;
+                document.getElementById('political-result').textContent = data.political;
+                document.getElementById('upsc-result').textContent = data.upsc;
+                
+                result.classList.remove('hidden');
+            } catch (error) {
+                alert(error.message || 'An error occurred while analyzing the article');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
