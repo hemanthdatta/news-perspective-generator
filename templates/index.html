@@ -5,10 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>News Perspective Generator</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .perspective-card {
+            transition: transform 0.2s;
+        }
+        .perspective-card:hover {
+            transform: translateY(-5px);
+        }
+        .analysis-content {
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .analysis-content ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-4xl font-bold text-center mb-8 text-gray-800">News Perspective Generator</h1>
+        <h1 class="text-4xl font-bold text-center mb-2 text-gray-800">News Perspective Generator</h1>
+        <p class="text-center text-gray-600 mb-8">Get multi-perspective analysis of any news article</p>
         
         <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
             <div class="mb-6">
@@ -23,38 +41,45 @@
                 </button>
             </div>
 
-            <div id="result" class="hidden">
+            <div id="result" class="hidden space-y-6">
                 <h2 class="text-xl font-semibold mb-4">Analysis Results</h2>
                 
-                <div class="space-y-6">
+                <div class="grid md:grid-cols-1 gap-6">
                     <!-- Business Perspective -->
-                    <div class="p-4 bg-blue-50 rounded-lg">
-                        <h3 class="font-semibold text-blue-800 mb-2">Business Perspective</h3>
-                        <div id="business-result" class="text-gray-700"></div>
+                    <div class="perspective-card p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-blue-800 text-lg mb-4">💼 Business Perspective</h3>
+                        <div id="business-result" class="analysis-content text-gray-700"></div>
                     </div>
 
                     <!-- Political Perspective -->
-                    <div class="p-4 bg-green-50 rounded-lg">
-                        <h3 class="font-semibold text-green-800 mb-2">Political Perspective</h3>
-                        <div id="political-result" class="text-gray-700"></div>
+                    <div class="perspective-card p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-green-800 text-lg mb-4">🏛️ Political Perspective</h3>
+                        <div id="political-result" class="analysis-content text-gray-700"></div>
                     </div>
 
                     <!-- UPSC Perspective -->
-                    <div class="p-4 bg-purple-50 rounded-lg">
-                        <h3 class="font-semibold text-purple-800 mb-2">UPSC Perspective</h3>
-                        <div id="upsc-result" class="text-gray-700"></div>
+                    <div class="perspective-card p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-purple-800 text-lg mb-4">📚 UPSC Perspective</h3>
+                        <div id="upsc-result" class="analysis-content text-gray-700"></div>
                     </div>
                 </div>
             </div>
 
-            <div id="loading" class="hidden text-center py-4">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                <p class="mt-2 text-gray-600">Analyzing article...</p>
+            <div id="loading" class="hidden">
+                <div class="flex flex-col items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    <p class="mt-4 text-gray-600">Analyzing article...</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        function formatText(text) {
+            // Preserve emojis and formatting while making bullet points more visible
+            return text.replace(/•/g, '◆');
+        }
+
         async function analyze() {
             const url = document.getElementById('url').value;
             if (!url) {
@@ -83,10 +108,10 @@
                     throw new Error(data.error);
                 }
 
-                // Display results
-                document.getElementById('business-result').textContent = data.business;
-                document.getElementById('political-result').textContent = data.political;
-                document.getElementById('upsc-result').textContent = data.upsc;
+                // Display formatted results
+                document.getElementById('business-result').innerHTML = formatText(data.business);
+                document.getElementById('political-result').innerHTML = formatText(data.political);
+                document.getElementById('upsc-result').innerHTML = formatText(data.upsc);
                 
                 result.classList.remove('hidden');
             } catch (error) {

@@ -52,35 +52,82 @@ def extract_article_content(url):
 def generate_perspective(text, perspective):
     try:
         if perspective == "business":
-            prompt = f"""Analyze this news article from a business perspective. Focus on:
-            1. Economic impacts and market implications
-            2. Business opportunities or challenges
-            3. Industry trends and market dynamics
-            4. Financial implications
-            
-            Article: {text}
-            
-            Provide a concise analysis focusing only on business aspects."""
+            prompt = f"""Analyze this news article from a business perspective. Structure your response in the following format:
+
+📈 ECONOMIC IMPACT
+• Point 1
+• Point 2
+• Point 3
+
+💼 MARKET IMPLICATIONS
+• Point 1
+• Point 2
+• Point 3
+
+🔄 BUSINESS OPPORTUNITIES
+• Point 1
+• Point 2
+• Point 3
+
+💡 KEY INSIGHTS
+• Point 1
+• Point 2
+
+Article: {text}
+
+Provide a well-structured analysis focusing on business aspects. Use bullet points and clear headings."""
+
         elif perspective == "political":
-            prompt = f"""Analyze this news article from a political perspective. Focus on:
-            1. Government policies and decisions
-            2. Political implications and consequences
-            3. Impact on governance and administration
-            4. Stakeholder interests and conflicts
-            
-            Article: {text}
-            
-            Provide a concise analysis focusing only on political aspects."""
+            prompt = f"""Analyze this news article from a political perspective. Structure your response in the following format:
+
+🏛️ POLICY IMPLICATIONS
+• Point 1
+• Point 2
+• Point 3
+
+⚖️ GOVERNANCE IMPACT
+• Point 1
+• Point 2
+• Point 3
+
+👥 STAKEHOLDER ANALYSIS
+• Point 1
+• Point 2
+• Point 3
+
+🎯 KEY TAKEAWAYS
+• Point 1
+• Point 2
+
+Article: {text}
+
+Provide a well-structured analysis focusing on political aspects. Use bullet points and clear headings."""
+
         else:  # UPSC
-            prompt = f"""Analyze this news article from a UPSC (Civil Services) exam perspective. Focus on:
-            1. Administrative and governance aspects
-            2. Constitutional and legal implications
-            3. Socio-economic impacts
-            4. Policy frameworks and implementation
-            
-            Article: {text}
-            
-            Provide a concise analysis that would be relevant for UPSC exam preparation."""
+            prompt = f"""Analyze this news article from a UPSC (Civil Services) exam perspective. Structure your response in the following format:
+
+📚 ADMINISTRATIVE ASPECTS
+• Point 1
+• Point 2
+• Point 3
+
+⚡ CONSTITUTIONAL IMPLICATIONS
+• Point 1
+• Point 2
+• Point 3
+
+🌐 SOCIO-ECONOMIC IMPACT
+• Point 1
+• Point 2
+• Point 3
+
+📝 EXAM FOCUS POINTS
+• Point 1
+• Point 2
+
+Article: {text}
+
+Provide a well-structured analysis relevant for UPSC exam preparation. Use bullet points and clear headings."""
 
         response = model.generate_content(prompt)
         return response.text
