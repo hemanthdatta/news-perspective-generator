@@ -54,80 +54,80 @@ def generate_perspective(text, perspective):
         if perspective == "business":
             prompt = f"""Analyze this news article from a business perspective. Structure your response in the following format:
 
-📈 ECONOMIC IMPACT
-• Point 1
-• Point 2
-• Point 3
+📈 **ECONOMIC IMPACT**
+• **Market Dynamics**: [Key point about market changes]
+• **Financial Impact**: [Key point about financial implications]
+• **Economic Indicators**: [Key point about economic metrics]
 
-💼 MARKET IMPLICATIONS
-• Point 1
-• Point 2
-• Point 3
+💼 **MARKET IMPLICATIONS**
+• **Industry Trends**: [Key point about industry changes]
+• **Competition**: [Key point about competitive landscape]
+• **Market Opportunities**: [Key point about potential opportunities]
 
-🔄 BUSINESS OPPORTUNITIES
-• Point 1
-• Point 2
-• Point 3
+🔄 **BUSINESS OPPORTUNITIES**
+• **Growth Areas**: [Key point about expansion possibilities]
+• **Strategic Moves**: [Key point about strategic implications]
+• **Investment Potential**: [Key point about investment aspects]
 
-💡 KEY INSIGHTS
-• Point 1
-• Point 2
+💡 **KEY INSIGHTS**
+• **Primary Impact**: [Most important business impact]
+• **Future Outlook**: [Prediction or future implications]
 
 Article: {text}
 
-Provide a well-structured analysis focusing on business aspects. Use bullet points and clear headings."""
+Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists."""
 
         elif perspective == "political":
             prompt = f"""Analyze this news article from a political perspective. Structure your response in the following format:
 
-🏛️ POLICY IMPLICATIONS
-• Point 1
-• Point 2
-• Point 3
+🏛️ **POLICY IMPLICATIONS**
+• **Policy Changes**: [Key point about policy modifications]
+• **Legislative Impact**: [Key point about legal changes]
+• **Regulatory Framework**: [Key point about regulations]
 
-⚖️ GOVERNANCE IMPACT
-• Point 1
-• Point 2
-• Point 3
+⚖️ **GOVERNANCE IMPACT**
+• **Administrative Changes**: [Key point about governance]
+• **Implementation**: [Key point about execution]
+• **Institutional Effects**: [Key point about institutional impact]
 
-👥 STAKEHOLDER ANALYSIS
-• Point 1
-• Point 2
-• Point 3
+👥 **STAKEHOLDER ANALYSIS**
+• **Key Players**: [Important stakeholders involved]
+• **Interest Groups**: [Affected groups]
+• **Public Impact**: [Effect on general public]
 
-🎯 KEY TAKEAWAYS
-• Point 1
-• Point 2
+🎯 **KEY TAKEAWAYS**
+• **Critical Impact**: [Most significant political impact]
+• **Future Developments**: [Expected political developments]
 
 Article: {text}
 
-Provide a well-structured analysis focusing on political aspects. Use bullet points and clear headings."""
+Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists."""
 
         else:  # UPSC
             prompt = f"""Analyze this news article from a UPSC (Civil Services) exam perspective. Structure your response in the following format:
 
-📚 ADMINISTRATIVE ASPECTS
-• Point 1
-• Point 2
-• Point 3
+📚 **ADMINISTRATIVE ASPECTS**
+• **Governance**: [Key point about administration]
+• **Policy Framework**: [Key point about policy]
+• **Implementation**: [Key point about execution]
 
-⚡ CONSTITUTIONAL IMPLICATIONS
-• Point 1
-• Point 2
-• Point 3
+⚡ **CONSTITUTIONAL IMPLICATIONS**
+• **Legal Framework**: [Key point about legal aspects]
+• **Constitutional Provisions**: [Relevant provisions]
+• **Precedents**: [Related cases or examples]
 
-🌐 SOCIO-ECONOMIC IMPACT
-• Point 1
-• Point 2
-• Point 3
+🌐 **SOCIO-ECONOMIC IMPACT**
+• **Social Changes**: [Key point about social impact]
+• **Economic Effects**: [Key point about economic impact]
+• **Development Goals**: [Related development aspects]
 
-📝 EXAM FOCUS POINTS
-• Point 1
-• Point 2
+📝 **EXAM FOCUS POINTS**
+• **Key Topics**: [Important topics for study]
+• **Previous Questions**: [Related UPSC questions]
 
 Article: {text}
 
-Provide a well-structured analysis relevant for UPSC exam preparation. Use bullet points and clear headings."""
+Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists."""
 
         response = model.generate_content(prompt)
         return response.text

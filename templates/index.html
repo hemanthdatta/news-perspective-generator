@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>News Perspective Generator</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         .perspective-card {
             transition: transform 0.2s;
@@ -17,9 +18,22 @@
             font-size: 0.95rem;
             line-height: 1.6;
         }
+        .analysis-content strong {
+            color: #4a5568;
+            font-weight: 600;
+        }
         .analysis-content ul {
             list-style-type: disc;
             margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .analysis-content li {
+            margin-bottom: 0.5rem;
+        }
+        .highlight {
+            background: linear-gradient(120deg, rgba(66, 153, 225, 0.1) 0%, rgba(66, 153, 225, 0.1) 100%);
+            padding: 0.1em 0.3em;
+            border-radius: 0.2em;
         }
     </style>
 </head>
@@ -76,8 +90,11 @@
 
     <script>
         function formatText(text) {
-            // Preserve emojis and formatting while making bullet points more visible
-            return text.replace(/•/g, '◆');
+            // Convert markdown to HTML
+            const htmlContent = marked.parse(text);
+            
+            // Additional formatting for important terms
+            return htmlContent.replace(/\[([^\]]+)\]/g, '<span class="highlight">$1</span>');
         }
 
         async function analyze() {
