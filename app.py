@@ -284,15 +284,19 @@ def chat():
         if not article_text:
             return jsonify({'error': 'No article context found. Please analyze an article first.'}), 400
             
-        prompt = f"""Based on this article:
-        {article_text[:1000]}...
+        prompt = f"""Based on this article content:
+        {article_text[:1500]}...
         
-        Answer this question: {question}
+        Question: {question}
         
-        Provide a concise and informative answer based solely on the article content."""
+        Provide a clear and informative answer based solely on the article content. If the question cannot be answered using only the article content, say so. Format your response using markdown for better readability."""
         
-        response = generate_analysis(prompt)
-        return jsonify({'response': response})
+        try:
+            response = model.generate_content(prompt)
+            return jsonify({'response': response.text})
+        except Exception as e:
+            logging.error(f"Gemini API error: {str(e)}")
+            return jsonify({'error': 'Failed to generate response from AI model'}), 500
         
     except Exception as e:
         logging.error(f"Chat error: {str(e)}")
@@ -305,18 +309,21 @@ def suggested_questions():
         if not article_text:
             return jsonify({'error': 'No article context found. Please analyze an article first.'}), 400
             
-        prompt = f"""Based on this article:
-        {article_text[:1000]}...
+        prompt = f"""Based on this article content:
+        {article_text[:1500]}...
         
         Generate 3 relevant and insightful questions that readers might want to ask about this article.
-        Format them as a JSON array of strings."""
+        Format the questions as a JSON array of strings. Make the questions specific to the article's content."""
         
-        questions = generate_analysis(prompt)
-        # Clean up the response to ensure it's a valid JSON array
-        questions = questions.strip('`[] \n').replace('\n', '').split('","')
-        questions = [q.strip('"') for q in questions]
-        
-        return jsonify({'questions': questions})
+        try:
+            response = model.generate_content(prompt)
+            # Clean up the response to ensure it's a valid JSON array
+            questions = response.text.strip('`[] \n').replace('\n', '').split('","')
+            questions = [q.strip('"') for q in questions]
+            return jsonify({'questions': questions})
+        except Exception as e:
+            logging.error(f"Gemini API error: {str(e)}")
+            return jsonify({'error': 'Failed to generate questions from AI model'}), 500
         
     except Exception as e:
         logging.error(f"Error generating questions: {str(e)}")

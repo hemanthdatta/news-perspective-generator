@@ -184,14 +184,15 @@
                 const data = await response.json();
                 
                 if (data.error) {
-                    throw new Error(data.error);
+                    addMessageToChat('error', `⚠️ ${data.error}`);
+                    return;
                 }
                 
                 // Add AI response to chat
                 addMessageToChat('ai', data.response);
                 
             } catch (error) {
-                alert(error.message || 'An error occurred while processing your question');
+                addMessageToChat('error', '⚠️ An error occurred while processing your question');
             }
         }
 
@@ -209,6 +210,8 @@
             messageContent.className = `max-w-[80%] rounded-lg p-4 ${
                 type === 'user' 
                     ? 'bg-blue-500 text-white' 
+                    : type === 'error'
+                    ? 'bg-red-100 text-red-700'
                     : 'bg-gray-100 text-gray-800'
             }`;
             messageContent.innerHTML = type === 'ai' ? formatText(message) : message;
