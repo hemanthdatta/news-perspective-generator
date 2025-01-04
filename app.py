@@ -6,6 +6,7 @@ import sys
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 # Load environment variables
 load_dotenv()
@@ -24,6 +25,13 @@ genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True, resources={
+    r"/*": {
+        "origins": ["chrome-extension://*", "http://localhost:*"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 app.secret_key = 'your_secret_key_here'
 
 def get_article_content(url):
@@ -246,41 +254,43 @@ def home():
 def analyze():
     try:
         data = request.get_json()
-        url = data.get('url')
-        perspective = data.get('perspective', 'all')
+        if not data or 'url' not in data:
+            return jsonify({'error': 'No URL provided'}), 400
+
+        url = data['url']
         
-        if not url:
-            return jsonify({'error': 'URL is required'}), 400
+        try:
+            article_text = get_article_content(url)
+            if not article_text:
+                return jsonify({'error': 'Could not extract article content. This might be due to website restrictions.'}), 400
             
-        # Get article content
-        article_text = get_article_content(url)
-        
-        # Store the article text in session for chatbot
-        session['article_text'] = article_text
-        
-        # Generate perspective based on request
-        result = {}
-        perspectives = [perspective] if perspective != 'all' else ['business', 'political', 'upsc']
-        
-        for p in perspectives:
-            prompt = get_prompt_for_perspective(p, article_text)
-            try:
-                response = model.generate_content(prompt)
-                result[p] = response.text
-            except Exception as e:
-                logging.error(f"Error generating {p} perspective: {str(e)}")
-                result[p] = f"Error generating {p} perspective. Please try again."
-        
-        # Store the analyzed text and results in session
-        session['analysis_results'] = result
+            session['article_text'] = article_text
+        except Exception as e:
+            print(f"Scraping error: {str(e)}")
+            return jsonify({'error': 'Failed to access the article. The website might be blocking automated access.'}), 400
+
+        try:
+            perspectives = {}
+            perspectives_list = ['business', 'political', 'upsc']
+            for p in perspectives_list:
+                prompt = get_prompt_for_perspective(p, article_text)
+                try:
+                    response = model.generate_content(prompt)
+                    perspectives[p] = response.text
+                except Exception as e:
+                    logging.error(f"Error generating {p} perspective: {str(e)}")
+                    perspectives[p] = f"Error generating {p} perspective. Please try again."
             
-        return jsonify(result)
-        
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400
+            session['analysis_results'] = perspectives
+            
+            return jsonify(perspectives)
+        except Exception as e:
+            print(f"Analysis error: {str(e)}")
+            return jsonify({'error': 'An error occurred while analyzing the article.'}), 500
+
     except Exception as e:
-        logging.error(f"Unexpected error: {str(e)}")
-        return jsonify({'error': 'An unexpected error occurred'}), 500
+        print(f"General error: {str(e)}")
+        return jsonify({'error': 'An unexpected error occurred.'}), 500
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -371,4 +381,4 @@ if __name__ == '__main__':
         print("Please set your GOOGLE_API_KEY in the .env file")
         sys.exit(1)
     port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
