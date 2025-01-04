@@ -207,6 +207,42 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+/* Suggested questions styles */
+#suggested-questions {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+#suggested-questions button {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.95));
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    white-space: normal;
+    text-align: left;
+    line-height: 1.4;
+}
+
+#suggested-questions button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+#suggested-questions button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+    #suggested-questions button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .container {

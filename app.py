@@ -252,17 +252,27 @@ def analyze():
         if not url:
             return jsonify({'error': 'URL is required'}), 400
             
+        # Get article content
         article_text = get_article_content(url)
         
         # Store the article text in session for chatbot
         session['article_text'] = article_text
         
+        # Generate perspective based on request
         result = {}
         perspectives = [perspective] if perspective != 'all' else ['business', 'political', 'upsc']
         
         for p in perspectives:
             prompt = get_prompt_for_perspective(p, article_text)
-            result[p] = generate_analysis(prompt)
+            try:
+                response = model.generate_content(prompt)
+                result[p] = response.text
+            except Exception as e:
+                logging.error(f"Error generating {p} perspective: {str(e)}")
+                result[p] = f"Error generating {p} perspective. Please try again."
+        
+        # Store the analyzed text and results in session
+        session['analysis_results'] = result
             
         return jsonify(result)
         
@@ -278,18 +288,31 @@ def chat():
         data = request.get_json()
         question = data.get('question')
         article_text = session.get('article_text')
+        analysis_results = session.get('analysis_results', {})
         
         if not question:
             return jsonify({'error': 'Question is required'}), 400
         if not article_text:
             return jsonify({'error': 'No article context found. Please analyze an article first.'}), 400
             
-        prompt = f"""Based on this article content:
-        {article_text[:1500]}...
+        # Create a comprehensive prompt using both article and analysis
+        prompt = f"""Based on this article content and its analysis:
+
+Article:
+{article_text[:1500]}...
+
+Analysis Summary:
+"""
+        # Add available analyses
+        for perspective, analysis in analysis_results.items():
+            prompt += f"\n{perspective.upper()} PERSPECTIVE:\n{analysis[:300]}...\n"
         
-        Question: {question}
-        
-        Provide a clear and informative answer based solely on the article content. If the question cannot be answered using only the article content, say so. Format your response using markdown for better readability."""
+        prompt += f"""
+Question: {question}
+
+Provide a clear and informative answer based on both the article content and its analysis. 
+If the question cannot be answered using the available information, say so.
+Format your response using markdown for better readability."""
         
         try:
             response = model.generate_content(prompt)
@@ -306,24 +329,38 @@ def chat():
 def suggested_questions():
     try:
         article_text = session.get('article_text')
+        analysis_results = session.get('analysis_results', {})
+        
         if not article_text:
             return jsonify({'error': 'No article context found. Please analyze an article first.'}), 400
             
-        prompt = f"""Based on this article content:
-        {article_text[:1500]}...
-        
-        Generate 3 relevant and insightful questions that readers might want to ask about this article.
-        Format the questions as a JSON array of strings. Make the questions specific to the article's content."""
+        prompt = """Generate exactly 3 relevant questions about this article. Format your response as a comma-separated list of questions.
+
+Article:
+{text}
+
+Example format:
+What are the key economic implications discussed in the article?, How does this news affect international relations?, What are the potential long-term consequences?
+
+Generate 3 questions:""".format(text=article_text[:1500])
         
         try:
             response = model.generate_content(prompt)
-            # Clean up the response to ensure it's a valid JSON array
-            questions = response.text.strip('`[] \n').replace('\n', '').split('","')
-            questions = [q.strip('"') for q in questions]
+            questions = [q.strip() for q in response.text.split('?') if q.strip()]
+            questions = [f"{q}?" for q in questions[:3]]  # Ensure we have exactly 3 questions
+            
+            if not questions:
+                # Fallback questions if generation fails
+                questions = [
+                    "What are the main points discussed in this article?",
+                    "What are the potential implications of this news?",
+                    "How might this affect future developments?"
+                ]
+            
             return jsonify({'questions': questions})
         except Exception as e:
             logging.error(f"Gemini API error: {str(e)}")
-            return jsonify({'error': 'Failed to generate questions from AI model'}), 500
+            return jsonify({'error': 'Failed to generate questions'}), 500
         
     except Exception as e:
         logging.error(f"Error generating questions: {str(e)}")

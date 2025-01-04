@@ -147,19 +147,39 @@
                 const data = await response.json();
                 
                 if (data.error) {
-                    throw new Error(data.error);
+                    console.error('Error:', data.error);
+                    return;
                 }
                 
                 const container = document.getElementById('suggested-questions');
-                container.innerHTML = data.questions.map(q => `
-                    <button onclick="askSuggestedQuestion(this.textContent)" 
-                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors">
-                        ${q}
-                    </button>
-                `).join('');
+                container.innerHTML = ''; // Clear existing questions
+                
+                // Add heading
+                const heading = document.createElement('div');
+                heading.className = 'w-full text-gray-600 mb-3';
+                heading.textContent = 'Suggested Questions:';
+                container.appendChild(heading);
+                
+                // Add questions
+                data.questions.forEach(question => {
+                    const button = document.createElement('button');
+                    button.className = 'px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors mb-2 mr-2';
+                    button.textContent = question;
+                    button.onclick = () => askSuggestedQuestion(question);
+                    container.appendChild(button);
+                });
+                
+                // Show the container
+                container.classList.remove('hidden');
             } catch (error) {
                 console.error('Error loading suggested questions:', error);
             }
+        }
+
+        function askSuggestedQuestion(question) {
+            const input = document.getElementById('chat-input');
+            input.value = question;
+            sendQuestion();
         }
 
         async function sendQuestion() {
@@ -194,11 +214,6 @@
             } catch (error) {
                 addMessageToChat('error', '⚠️ An error occurred while processing your question');
             }
-        }
-
-        function askSuggestedQuestion(question) {
-            document.getElementById('chat-input').value = question;
-            sendQuestion();
         }
 
         function addMessageToChat(type, message) {
