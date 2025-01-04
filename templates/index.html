@@ -67,6 +67,16 @@
                     <p class="text-gray-600 text-lg">Analyzing article...</p>
                 </div>
             </div>
+
+            <div id="chat-section" class="hidden">
+                <div class="flex flex-col space-y-4">
+                    <div id="chat-history" class="overflow-y-auto max-h-96 p-4 rounded-lg bg-gray-100"></div>
+                    <input type="text" id="chat-input" 
+                        class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Ask a question...">
+                    <div id="suggested-questions" class="flex flex-wrap gap-4"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -85,6 +95,7 @@
 
             const loading = document.getElementById('loading');
             const result = document.getElementById('result');
+            const chatSection = document.getElementById('chat-section');
             const cards = {
                 'business': document.getElementById('business-card'),
                 'political': document.getElementById('political-card'),
@@ -93,6 +104,7 @@
             
             loading.classList.remove('hidden');
             result.classList.remove('hidden');
+            chatSection.classList.add('hidden');
             
             // Hide all cards initially
             Object.values(cards).forEach(card => card.classList.add('hidden'));
@@ -115,6 +127,10 @@
                 // Show only the requested perspective
                 document.getElementById(`${perspective}-result`).innerHTML = formatText(data[perspective]);
                 cards[perspective].classList.remove('hidden');
+                chatSection.classList.remove('hidden');
+                
+                // Load suggested questions
+                loadSuggestedQuestions();
                 
                 // Smooth scroll to the result
                 cards[perspective].scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -124,6 +140,92 @@
                 loading.classList.add('hidden');
             }
         }
+
+        async function loadSuggestedQuestions() {
+            try {
+                const response = await fetch('/suggested_questions');
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                const container = document.getElementById('suggested-questions');
+                container.innerHTML = data.questions.map(q => `
+                    <button onclick="askSuggestedQuestion(this.textContent)" 
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors">
+                        ${q}
+                    </button>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading suggested questions:', error);
+            }
+        }
+
+        async function sendQuestion() {
+            const input = document.getElementById('chat-input');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            try {
+                // Add user question to chat
+                addMessageToChat('user', question);
+                input.value = '';
+                
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question }),
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Add AI response to chat
+                addMessageToChat('ai', data.response);
+                
+            } catch (error) {
+                alert(error.message || 'An error occurred while processing your question');
+            }
+        }
+
+        function askSuggestedQuestion(question) {
+            document.getElementById('chat-input').value = question;
+            sendQuestion();
+        }
+
+        function addMessageToChat(type, message) {
+            const chatHistory = document.getElementById('chat-history');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'}`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = `max-w-[80%] rounded-lg p-4 ${
+                type === 'user' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-100 text-gray-800'
+            }`;
+            messageContent.innerHTML = type === 'ai' ? formatText(message) : message;
+            
+            messageDiv.appendChild(messageContent);
+            chatHistory.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // Add event listener for Enter key in chat input
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendQuestion();
+            }
+        });
     </script>
 </body>
 </html>
