@@ -1,12 +1,19 @@
 from flask import Flask, render_template, request, jsonify, url_for, session
 import requests
 from bs4 import BeautifulSoup
-import logging
 import sys
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 from flask_cors import CORS
+from pathlib import Path
+
+ROOT_dir = Path(__file__).parent.parent.parent.absolute()
+sys.path.append(str(ROOT_dir))
+
+from src.ariticle_summerizer.logging import logging
+from src.ariticle_summerizer.pipeline.webscraping_pipeline import webscraping_pipeline_main
+from src.ariticle_summerizer.pipeline.context_generating_pipe_line import context_generating_pipeline_main
 
 # Load environment variables
 load_dotenv()
@@ -33,214 +40,17 @@ CORS(app, supports_credentials=True, resources={
     }
 })
 app.secret_key = 'your_secret_key_here'
-
+############################################
 def get_article_content(url):
-    try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Remove script and style elements
-        for script in soup(['script', 'style']):
-            script.decompose()
-            
-        # Get text content
-        text = soup.get_text()
-        
-        # Clean up text
-        lines = (line.strip() for line in text.splitlines())
-        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-        text = ' '.join(chunk for chunk in chunks if chunk)
-        
-        if not text or len(text.split()) < 10:
-            raise ValueError("Could not extract meaningful content from the article")
-            
-        return text
-    except requests.RequestException as e:
-        logging.error(f"Error fetching URL {url}: {str(e)}")
-        raise ValueError(f"Could not access the article. The website might be blocking access. Please try a different news source.")
-    except Exception as e:
-        logging.error(f"Error processing URL {url}: {str(e)}")
-        raise ValueError(f"Error processing the article: {str(e)}")
+    pass
+############################################
 
+############################################
 def generate_perspective(text, perspective):
-    try:
-        if perspective == "business":
-            prompt = f"""Analyze this news article from a business perspective. Structure your response in the following format:
+    pass
+############################################
 
-📈 **ECONOMIC IMPACT**
-• **Market Dynamics**: [Key point about market changes]
-• **Financial Impact**: [Key point about financial implications]
-• **Economic Indicators**: [Key point about economic metrics]
 
-💼 **MARKET IMPLICATIONS**
-• **Industry Trends**: [Key point about industry changes]
-• **Competition**: [Key point about competitive landscape]
-• **Market Opportunities**: [Key point about potential opportunities]
-
-🔄 **BUSINESS OPPORTUNITIES**
-• **Growth Areas**: [Key point about expansion possibilities]
-• **Strategic Moves**: [Key point about strategic implications]
-• **Investment Potential**: [Key point about investment aspects]
-
-💡 **KEY INSIGHTS**
-• **Primary Impact**: [Most important business impact]
-• **Future Outlook**: [Prediction or future implications]
-
-Article: {text}
-
-Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists."""
-
-        elif perspective == "political":
-            prompt = f"""Analyze this news article from a political perspective. Structure your response in the following format:
-
-🏛️ **POLICY IMPLICATIONS**
-• **Policy Changes**: [Key point about policy modifications]
-• **Legislative Impact**: [Key point about legal changes]
-• **Regulatory Framework**: [Key point about regulations]
-
-⚖️ **GOVERNANCE IMPACT**
-• **Administrative Changes**: [Key point about governance]
-• **Implementation**: [Key point about execution]
-• **Institutional Effects**: [Key point about institutional impact]
-
-👥 **STAKEHOLDER ANALYSIS**
-• **Key Players**: [Important stakeholders involved]
-• **Interest Groups**: [Affected groups]
-• **Public Impact**: [Effect on general public]
-
-🎯 **KEY TAKEAWAYS**
-• **Critical Impact**: [Most significant political impact]
-• **Future Developments**: [Expected political developments]
-
-Article: {text}
-
-Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists."""
-
-        else:  # UPSC
-            prompt = f"""Analyze this news article from a UPSC (Civil Services) exam perspective. Structure your response in the following format:
-
-📚 **ADMINISTRATIVE ASPECTS**
-• **Governance**: [Key point about administration]
-• **Policy Framework**: [Key point about policy]
-• **Implementation**: [Key point about execution]
-
-⚡ **CONSTITUTIONAL IMPLICATIONS**
-• **Legal Framework**: [Key point about legal aspects]
-• **Constitutional Provisions**: [Relevant provisions]
-• **Precedents**: [Related cases or examples]
-
-🌐 **SOCIO-ECONOMIC IMPACT**
-• **Social Changes**: [Key point about social impact]
-• **Economic Effects**: [Key point about economic impact]
-• **Development Goals**: [Related development aspects]
-
-📝 **EXAM FOCUS POINTS**
-• **Key Topics**: [Important topics for study]
-• **Previous Questions**: [Related UPSC questions]
-
-Article: {text}
-
-Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists."""
-
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        logger.error(f"Error generating {perspective} perspective: {str(e)}")
-        return f"Error generating {perspective} perspective: {str(e)}"
-
-def generate_analysis(prompt):
-    try:
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        logger.error(f"Error generating analysis: {str(e)}")
-        return f"Error generating analysis: {str(e)}"
-
-def get_prompt_for_perspective(perspective, article_text):
-    if perspective == "business":
-        prompt = f"""Analyze this news article from a business perspective. Structure your response in the following format:
-
-📈 **ECONOMIC IMPACT**
-• **Market Dynamics**: [Key point about market changes]
-• **Financial Impact**: [Key point about financial implications]
-• **Economic Indicators**: [Key point about economic metrics]
-
-💼 **MARKET IMPLICATIONS**
-• **Industry Trends**: [Key point about industry changes]
-• **Competition**: [Key point about competitive landscape]
-• **Market Opportunities**: [Key point about potential opportunities]
-
-🔄 **BUSINESS OPPORTUNITIES**
-• **Growth Areas**: [Key point about expansion possibilities]
-• **Strategic Moves**: [Key point about strategic implications]
-• **Investment Potential**: [Key point about investment aspects]
-
-💡 **KEY INSIGHTS**
-• **Primary Impact**: [Most important business impact]
-• **Future Outlook**: [Prediction or future implications]
-
-Article: {article_text}
-
-Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists."""
-
-    elif perspective == "political":
-        prompt = f"""Analyze this news article from a political perspective. Structure your response in the following format:
-
-🏛️ **POLICY IMPLICATIONS**
-• **Policy Changes**: [Key point about policy modifications]
-• **Legislative Impact**: [Key point about legal changes]
-• **Regulatory Framework**: [Key point about regulations]
-
-⚖️ **GOVERNANCE IMPACT**
-• **Administrative Changes**: [Key point about governance]
-• **Implementation**: [Key point about execution]
-• **Institutional Effects**: [Key point about institutional impact]
-
-👥 **STAKEHOLDER ANALYSIS**
-• **Key Players**: [Important stakeholders involved]
-• **Interest Groups**: [Affected groups]
-• **Public Impact**: [Effect on general public]
-
-🎯 **KEY TAKEAWAYS**
-• **Critical Impact**: [Most significant political impact]
-• **Future Developments**: [Expected political developments]
-
-Article: {article_text}
-
-Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists."""
-
-    else:  # UPSC
-        prompt = f"""Analyze this news article from a UPSC (Civil Services) exam perspective. Structure your response in the following format:
-
-📚 **ADMINISTRATIVE ASPECTS**
-• **Governance**: [Key point about administration]
-• **Policy Framework**: [Key point about policy]
-• **Implementation**: [Key point about execution]
-
-⚡ **CONSTITUTIONAL IMPLICATIONS**
-• **Legal Framework**: [Key point about legal aspects]
-• **Constitutional Provisions**: [Relevant provisions]
-• **Precedents**: [Related cases or examples]
-
-🌐 **SOCIO-ECONOMIC IMPACT**
-• **Social Changes**: [Key point about social impact]
-• **Economic Effects**: [Key point about economic impact]
-• **Development Goals**: [Related development aspects]
-
-📝 **EXAM FOCUS POINTS**
-• **Key Topics**: [Important topics for study]
-• **Previous Questions**: [Related UPSC questions]
-
-Article: {article_text}
-
-Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists."""
-
-    return prompt
 
 @app.route('/')
 def home():
@@ -260,7 +70,7 @@ def analyze():
         url = data['url']
         
         try:
-            article_text = get_article_content(url)
+            article_text = webscraping_pipeline_main(url)
             if not article_text:
                 return jsonify({'error': 'Could not extract article content. This might be due to website restrictions.'}), 400
             
@@ -273,10 +83,8 @@ def analyze():
             perspectives = {}
             perspectives_list = ['business', 'political', 'upsc']
             for p in perspectives_list:
-                prompt = get_prompt_for_perspective(p, article_text)
                 try:
-                    response = model.generate_content(prompt)
-                    perspectives[p] = response.text
+                    perspectives[p] = context_generating_pipeline_main(article_text, p)
                 except Exception as e:
                     logging.error(f"Error generating {p} perspective: {str(e)}")
                     perspectives[p] = f"Error generating {p} perspective. Please try again."
