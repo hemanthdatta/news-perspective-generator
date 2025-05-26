@@ -16,6 +16,9 @@
                 News Perspective Generator
             </h1>
             <p class="text-gray-600 text-lg">Analyze news articles from multiple viewpoints</p>
+            
+            
+
             <p class="text-gray-500 text-sm mt-2">Made with 💙 by <span class="font-semibold gradient-text">Hemanth Datta and Eswar Gupta</span></p>
         </div>
         
@@ -64,17 +67,23 @@
             <div id="loading" class="hidden">
                 <div class="flex flex-col items-center justify-center py-12">
                     <div class="loading-animation mb-4"></div>
-                    <p class="text-gray-600 text-lg">Analyzing article...</p>
+                    <p class="text-gray-600 text-lg mb-2">Analyzing article...</p>
+                    <p class="text-gray-500 text-sm">This will take some time as starting from api to the website hoster i used only free tools.</p>
                 </div>
             </div>
 
-            <div id="chat-section" class="hidden">
-                <div class="flex flex-col space-y-4">
-                    <div id="chat-history" class="overflow-y-auto max-h-96 p-4 rounded-lg bg-gray-100"></div>
-                    <input type="text" id="chat-input" 
-                        class="input-field w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Ask a question...">
-                    <div id="suggested-questions" class="flex flex-wrap gap-4"></div>
+            <!-- Add the new example articles and disclaimer section -->
+            <div class="mt-4 mb-6">
+                <p class="text-amber-600 font-medium mb-2">Example Articles:</p>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button onclick="setExampleArticle('https://www.bbc.com/news/articles/cjd5835mp4ko')"
+                        class="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors">
+                        Load BBC Example Article
+                    </button>
+                </div>
+                <div class="mt-4 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                    <p class="font-medium text-red-500 mb-1">⚠️ Important Note:</p>
+                    <p>Some news websites may block web scraping due to their security policies. For best results, try using articles from major news outlets that allow content access. If an article cannot be analyzed, try a different source.</p>
                 </div>
             </div>
         </div>
@@ -95,7 +104,6 @@
 
             const loading = document.getElementById('loading');
             const result = document.getElementById('result');
-            const chatSection = document.getElementById('chat-section');
             const cards = {
                 'business': document.getElementById('business-card'),
                 'political': document.getElementById('political-card'),
@@ -104,7 +112,6 @@
             
             loading.classList.remove('hidden');
             result.classList.remove('hidden');
-            chatSection.classList.add('hidden');
             
             // Hide all cards initially
             Object.values(cards).forEach(card => card.classList.add('hidden'));
@@ -127,10 +134,6 @@
                 // Show only the requested perspective
                 document.getElementById(`${perspective}-result`).innerHTML = formatText(data[perspective]);
                 cards[perspective].classList.remove('hidden');
-                chatSection.classList.remove('hidden');
-                
-                // Load suggested questions
-                loadSuggestedQuestions();
                 
                 // Smooth scroll to the result
                 cards[perspective].scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -141,109 +144,9 @@
             }
         }
 
-        async function loadSuggestedQuestions() {
-            try {
-                const response = await fetch('/suggested_questions');
-                const data = await response.json();
-                
-                if (data.error) {
-                    console.error('Error:', data.error);
-                    return;
-                }
-                
-                const container = document.getElementById('suggested-questions');
-                container.innerHTML = ''; // Clear existing questions
-                
-                // Add heading
-                const heading = document.createElement('div');
-                heading.className = 'w-full text-gray-600 mb-3';
-                heading.textContent = 'Suggested Questions:';
-                container.appendChild(heading);
-                
-                // Add questions
-                data.questions.forEach(question => {
-                    const button = document.createElement('button');
-                    button.className = 'px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors mb-2 mr-2';
-                    button.textContent = question;
-                    button.onclick = () => askSuggestedQuestion(question);
-                    container.appendChild(button);
-                });
-                
-                // Show the container
-                container.classList.remove('hidden');
-            } catch (error) {
-                console.error('Error loading suggested questions:', error);
-            }
+        function setExampleArticle(url) {
+            document.getElementById('url').value = url;
         }
-
-        function askSuggestedQuestion(question) {
-            const input = document.getElementById('chat-input');
-            input.value = question;
-            sendQuestion();
-        }
-
-        async function sendQuestion() {
-            const input = document.getElementById('chat-input');
-            const question = input.value.trim();
-            
-            if (!question) return;
-            
-            try {
-                // Add user question to chat
-                addMessageToChat('user', question);
-                input.value = '';
-                
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ question }),
-                });
-
-                const data = await response.json();
-                
-                if (data.error) {
-                    addMessageToChat('error', `⚠️ ${data.error}`);
-                    return;
-                }
-                
-                // Add AI response to chat
-                addMessageToChat('ai', data.response);
-                
-            } catch (error) {
-                addMessageToChat('error', '⚠️ An error occurred while processing your question');
-            }
-        }
-
-        function addMessageToChat(type, message) {
-            const chatHistory = document.getElementById('chat-history');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'}`;
-            
-            const messageContent = document.createElement('div');
-            messageContent.className = `max-w-[80%] rounded-lg p-4 ${
-                type === 'user' 
-                    ? 'bg-blue-500 text-white' 
-                    : type === 'error'
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-gray-100 text-gray-800'
-            }`;
-            messageContent.innerHTML = type === 'ai' ? formatText(message) : message;
-            
-            messageDiv.appendChild(messageContent);
-            chatHistory.appendChild(messageDiv);
-            
-            // Scroll to bottom
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
-
-        // Add event listener for Enter key in chat input
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendQuestion();
-            }
-        });
     </script>
 </body>
 </html>

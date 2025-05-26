@@ -8,6 +8,26 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from pathlib import Path
 
+# ...existing imports...
+import yaml
+from src.ariticle_summerizer.logging import logging
+
+# Add this after your imports
+def load_config():
+    try:
+        config_path = Path(__file__).parent / 'promts.yaml'
+        with open(config_path, 'r', encoding='utf-8') as file:
+            return yaml.safe_load(file)
+    except Exception as e:
+        logging.error(f"Error loading config: {str(e)}")
+        return {}  # Return empty dict instead of None
+
+# Add this before app = Flask(__name__)
+config = load_config()
+if not config:
+    logging.error("Failed to load configuration")
+    sys.exit(1)
+
 ROOT_dir = Path(__file__).parent.parent.parent.absolute()
 sys.path.append(str(ROOT_dir))
 

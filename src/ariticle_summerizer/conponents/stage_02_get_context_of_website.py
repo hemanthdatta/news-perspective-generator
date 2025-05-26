@@ -16,8 +16,10 @@ load_dotenv()
 
 # Configure Gemini API
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+logging.info(f"GOOGLE_API_KEY: {GOOGLE_API_KEY}")
 genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-pro')
+
+model = genai.GenerativeModel('gemini-2.0-flash')
 
 stage_02_config = read_yaml_file(config_yaml_file_path)
 print(stage_02_config)
