@@ -236,3 +236,14 @@ Distributed under the MIT License. See [LICENSE](https://choosealicense.com/lice
 * Powered by [Google Gemini](https://developers.google.com/gemini).
 * Icons by [VSCode Material Icon Theme](https://github.com/PKief/vscode-material-icon-theme).
 * Badges by [Shields.io](https://shields.io/).
+
+
+*Note you just breif them hear and record all our configration the steps the dounts i asked and say look at a file called deploying a dynamic website using firebase.md
+## Deploying using firebase
+
+* I need to write it in readme.md don't mae to long just say how to do
+* Mention the error that i got so it will be essay for other like don't worry when you get error in doing installing etc.. everything mention in points wise neatly
+
+
+## Updating version
+* Explain how the public and function work etc.. and say how to redoply the update version fron local PC
