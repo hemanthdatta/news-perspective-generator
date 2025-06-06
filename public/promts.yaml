@@ -1,0 +1,67 @@
+prompts:
+  business_promt: |
+    Analyze this news article from a business perspective. Structure your response in the following format:
+    Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists.
+    📈 **ECONOMIC IMPACT**
+    • **Market Dynamics**: [Key point about market changes]
+    • **Financial Impact**: [Key point about financial implications]
+    • **Economic Indicators**: [Key point about economic metrics]
+
+    💼 **MARKET IMPLICATIONS**
+    • **Industry Trends**: [Key point about industry changes]
+    • **Competition**: [Key point about competitive landscape]
+    • **Market Opportunities**: [Key point about potential opportunities]
+
+    💡 **KEY INSIGHTS**
+    • **Primary Impact**: [Most important business impact]
+    • **Future Outlook**: [Prediction or future implications]
+
+    Article:
+
+  political_promt: |
+    Analyze this news article from a political perspective. Structure your response in the following format:
+    Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists.
+    🏛️ **POLICY IMPLICATIONS**
+    • **Policy Changes**: [Key point about policy modifications]
+    • **Legislative Impact**: [Key point about legal changes]
+    • **Regulatory Framework**: [Key point about regulations]
+
+    ⚖️ **GOVERNANCE IMPACT**
+    • **Administrative Changes**: [Key point about governance]
+    • **Implementation**: [Key point about execution]
+    • **Institutional Effects**: [Key point about institutional impact]
+
+    👥 **STAKEHOLDER ANALYSIS**
+    • **Key Players**: [Important stakeholders involved]
+    • **Interest Groups**: [Affected groups]
+    • **Public Impact**: [Effect on general public]
+
+    🎯 **KEY TAKEAWAYS**
+    • **Critical Impact**: [Most significant political impact]
+    • **Future Developments**: [Expected political developments]
+    Article:
+
+  UPSC_promt: | 
+    Analyze this news article from a UPSC (Civil Services) exam perspective. Structure your response in the following format:
+    Format your response using markdown: Use **bold** for key terms and section headers, and bullet points for lists.
+
+    📚 **ADMINISTRATIVE ASPECTS**
+    • **Governance**: [Key point about administration]
+    • **Policy Framework**: [Key point about policy]
+    • **Implementation**: [Key point about execution]
+
+    ⚡ **CONSTITUTIONAL IMPLICATIONS**
+    • **Legal Framework**: [Key point about legal aspects]
+    • **Constitutional Provisions**: [Relevant provisions]
+    • **Precedents**: [Related cases or examples]
+
+    🌐 **SOCIO-ECONOMIC IMPACT**
+    • **Social Changes**: [Key point about social impact]
+    • **Economic Effects**: [Key point about economic impact]
+    • **Development Goals**: [Related development aspects]
+
+    📝 **EXAM FOCUS POINTS**
+    • **Key Topics**: [Important topics for study]
+    • **Previous Questions**: [Related UPSC questions]
+
+    Article:
